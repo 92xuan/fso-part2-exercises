@@ -3,12 +3,15 @@ import NamesDisplay from './components/NamesDisplay'
 import SearchBar from './components/SearchBar'
 import PersonForm from './components/PersonForm'
 import PhonebookService from './services/Phonebook'
+import Notifications from './components/Notifications'
 
 const App = (props) => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchName, setSearchName] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState(null)
+  const notificationDuration = 5000
 
   useEffect(() => {
     PhonebookService
@@ -16,33 +19,50 @@ const App = (props) => {
       .then(initialPersons => setPersons(initialPersons))
   }, [])
 
+  const resetNotifications = () => setTimeout(() => setNotificationMessage(null), notificationDuration)
+
   const addNewPerson = (event) => {
     event.preventDefault()
 
-    const newPersons = [...persons]
-    const personExists = newPersons.some(user => user.name === newName)
+    const personExists = persons.some(user => user.name === newName)
 
     if (personExists) {
       const updateContact = window.confirm(`${newName} is already added to the database. Replace existing number with a new one?`)
       if (updateContact) {
-        PhonebookService.updateNumber(newName, newNumber)
+        const newPersons = [...persons].filter(person => person.name !== newName)
+        PhonebookService
+          .updateNumber(newName, newNumber)
+          .then(response => {
+            console.log(response)
+            newPersons.push(response)
+            setPersons(newPersons)
+            setNotificationMessage(`${newName}'s contact was successfully updated`)
+            resetNotifications()
+          })
+          .catch(() => {
+            setNotificationMessage(`${newName}'s contact does not exist`)
+            resetNotifications()
+          })
+      } else {
+        setNotificationMessage(`Contact not updated`)
+        resetNotifications()
       }
     } else {
+      const newPersons = [...persons]
       const newContact = {
         name: newName, 
         number: newNumber, 
-        id: ++newPersons.length
       }
       PhonebookService
         .createNew(newContact)
         .then(response => {
           newPersons.push(response)
           setPersons(newPersons)
-          console.log(`new: ${newPersons}`)
-          console.log(`persons: ${persons}`)
         })
+      setNotificationMessage(`${newName} was successfully added`)
+      resetNotifications()
     }
-  
+    
     setNewName('')
     setNewNumber('')
   }
@@ -57,6 +77,12 @@ const App = (props) => {
       setPersons(newPersons)
       PhonebookService
         .deleteContact(nameToBeDeleted)
+      
+      setNotificationMessage(`${nameToBeDeleted} was successfully deleted`)
+      resetNotifications()
+    } else {
+      setNotificationMessage(`Contact not deleted`)
+      resetNotifications()
     }
   }
 
@@ -69,6 +95,7 @@ const App = (props) => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notifications message={notificationMessage} />
       <NamesDisplay namesToDisplay={namesToDisplay} handleClick={deletePerson}/>
 
       <h2>Add New Contact</h2>

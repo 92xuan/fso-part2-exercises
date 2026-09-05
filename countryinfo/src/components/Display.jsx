@@ -24,10 +24,12 @@ const SingleCountryModule = ({queryList, weatherData}) => {
 const Display = ({queryList, weatherData, handleClick, isLoading}) => {
 
     if (isLoading) 
-        return <div>Loading, please wait...</div>
-    else if (queryList.length == 1) 
-        return (<SingleCountryModule queryList={queryList} weatherData={weatherData} />);
-    else if (queryList.length > 10) 
+        return <div>Loading, please wait...</div>;
+    
+    if (queryList.length == 1) {
+        if (!weatherData.weather) return <div>Weather data loading...</div>;
+        return (<SingleCountryModule queryList={queryList} weatherData={weatherData} />)
+    } else if (queryList.length > 10) 
         return (<div>Too many countries matching query</div>)
     else if (queryList.length == 0) 
     return (<div>No countries matching query</div>)

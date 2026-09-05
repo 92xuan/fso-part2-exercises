@@ -3,6 +3,8 @@ import axios from 'axios'
 import Display from './components/Display'
 import CountrySearch from './components/CountrySearch'
 
+const api_key = import.meta.env.VITE_SOME_KEY
+
 const App = () => {
   const [query, setQuery] = useState('')
   const [allCountryData, setAllCountryData] = useState([])
@@ -24,15 +26,15 @@ const App = () => {
 
   useEffect (() => {
     if (queryList.length == 1) {
+      setIsLoading(true)
       const lat = queryList[0].latlng[0]
       const lng = queryList[0].latlng[1]
 
-      setIsLoading(true)
-      axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=8b25f85b4bd46fae8f4c4124951ae229`)
+      axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${api_key}`)
       .then(response => {setWeatherData(response.data)
+        setIsLoading(false)
         console.log(response.data)
       })
-      .then(() => setIsLoading(false))
     }
   }, [queryList])
 

@@ -5,7 +5,7 @@ import PersonForm from './components/PersonForm'
 import PhonebookService from './services/Phonebook'
 import Notifications from './components/Notifications'
 
-const App = (props) => {
+const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
@@ -67,18 +67,17 @@ const App = (props) => {
     setNewNumber('')
   }
 
-  const deletePerson = (event) => {
-    event.preventDefault()
+  const deletePerson = (id) => {
 
-    const nameToBeDeleted = event.currentTarget.parentElement.querySelector('.contact-name').textContent
+    const personToBeDeleted = persons.filter(person => person.id === id)[0]
 
-    if (window.confirm(`Delete ${nameToBeDeleted} from the phonebook?`)) {
-      const newPersons = [...persons].filter(person => person.name !== nameToBeDeleted)
+    if (window.confirm(`Delete ${personToBeDeleted.name} from the phonebook?`)) {
+      const newPersons = [...persons].filter(person => person.id !== id)
       setPersons(newPersons)
       PhonebookService
-        .deleteContact(nameToBeDeleted)
+        .deleteContact(personToBeDeleted)
       
-      setNotificationMessage(`${nameToBeDeleted} was successfully deleted`)
+      setNotificationMessage(`${personToBeDeleted.name} was successfully deleted`)
       resetNotifications()
     } else {
       setNotificationMessage(`Contact not deleted`)
@@ -96,7 +95,8 @@ const App = (props) => {
     <div>
       <h2>Phonebook</h2>
       <Notifications message={notificationMessage} />
-      <NamesDisplay namesToDisplay={namesToDisplay} handleClick={deletePerson}/>
+      <NamesDisplay namesToDisplay={namesToDisplay} 
+        handleClick={deletePerson}/>
 
       <h2>Add New Contact</h2>
       <PersonForm newName={newName} handleNewName={handleNewName} newNumber={newNumber} handleNewNumber={handleNewNumber} addNewPerson={addNewPerson}/>

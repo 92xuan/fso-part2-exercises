@@ -1,8 +1,7 @@
-const Name = ({index, name, number, handleClick}) => <li 
-        key={index}>
-        <span className="contact-name">{name}</span>: 
-        <span className="contact-number">{number}</span> 
-        <button onClick={handleClick}>Delete Contact</button>
+const Name = ({id, name, number, handleClick}) => <li key={id}>
+            <span className="contact-name">{name}: </span> 
+            <span className="contact-number">{number} </span> 
+            <button onClick={() => handleClick(id)}>Delete Contact</button>
         </li>
 
 const NamesDisplay = ({namesToDisplay, handleClick}) => {
@@ -13,8 +12,10 @@ const NamesDisplay = ({namesToDisplay, handleClick}) => {
     } else {
         return (
             <ul>
-            {namesToDisplay.map((person, index) => <Name key={index} handleClick={handleClick} 
-            name={person.name} number={person.number} />)}
+            {[...namesToDisplay]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((person, id) => <Name key={id} handleClick={handleClick} 
+                name={person.name} number={person.number} id={person.id}/>)}
             </ul>
         )
     }

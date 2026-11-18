@@ -24,28 +24,26 @@ const App = () => {
   const addNewPerson = (event) => {
     event.preventDefault()
 
-    const personExists = persons.some(user => user.name === newName)
+    const existingPerson = persons.filter(user => user.name === newName)[0]
+    console.log('existingPerson:', existingPerson)
 
-    if (personExists) {
+    if (existingPerson) {
       const updateContact = window.confirm(`${newName} is already added to the database. Replace existing number with a new one?`)
       if (updateContact) {
         const newPersons = [...persons].filter(person => person.name !== newName)
         PhonebookService
-          .updateNumber(newName, newNumber)
+          .updateNumber(existingPerson, newNumber)
           .then(response => {
             console.log(response)
             newPersons.push(response)
             setPersons(newPersons)
             setNotificationMessage(`${newName}'s contact was successfully updated`)
-            resetNotifications()
           })
           .catch(() => {
             setNotificationMessage(`${newName}'s contact does not exist`)
-            resetNotifications()
           })
       } else {
         setNotificationMessage(`Contact not updated`)
-        resetNotifications()
       }
     } else {
       const newPersons = [...persons]
@@ -58,11 +56,16 @@ const App = () => {
         .then(response => {
           newPersons.push(response)
           setPersons(newPersons)
+          setNotificationMessage(`${newName} was successfully added`)
         })
-      setNotificationMessage(`${newName} was successfully added`)
-      resetNotifications()
+        .catch(error => {
+          const errorMessage = error.response?.data?.error || 'Failed to add contact'
+          setNotificationMessage(errorMessage)
+          console.log('message:', errorMessage)
+        })
     }
-    
+
+    resetNotifications()
     setNewName('')
     setNewNumber('')
   }
